@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bag Price Calculator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #F5F3EE;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE7;
+    --border: #E0DDD6;
+    --border2: #C8C4BC;
+    --text: #1A1814;
+    --text2: #6B6760;
+    --text3: #9E9B96;
+    --accent: #2B5F3E;
+    --accent-light: #EAF2ED;
+    --accent-text: #1E4A2F;
+    --amber: #B45309;
+    --amber-light: #FEF3C7;
+    --info: #1D4ED8;
+    --info-light: #EFF6FF;
+    --danger: #DC2626;
+    --danger-light: #FEF2F2;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  header {
+    background: var(--accent);
+    color: white;
+    padding: 20px 16px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: normal;
+    letter-spacing: 0.02em;
+  }
+
+  header p {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 2px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 72px;
+    z-index: 99;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    background: none;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.03em;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: bold;
+  }
+
+  .tab-content { display: none; padding: 16px; }
+  .tab-content.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    margin-bottom: 12px;
+    font-family: 'Courier New', monospace;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 4px;
+    font-family: 'Courier New', monospace;
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Georgia', serif;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: white;
+  }
+
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .input-row.single { grid-template-columns: 1fr; }
+  .input-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .field { margin-bottom: 10px; }
+
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 14px;
+    font-family: 'Courier New', monospace;
+    transition: all 0.15s;
+    -webkit-appearance: none;
+  }
+  .chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .toggle-group { display: flex; border: 1px solid var(--border2); border-radius: 999px; overflow: hidden; width: fit-content; }
+  .toggle-btn {
+    padding: 8px 18px;
+    border: none;
+    background: var(--surface2);
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .toggle-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  .toggle-group.three .toggle-btn { padding: 8px 12px; font-size: 12px; }
+
+  .sub-card {
+    background: var(--accent-light);
+    border: 1px solid #B7D9C4;
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-top: 10px;
+  }
+  .sub-card.hidden { display: none; }
+  .sub-card .card-title { color: var(--accent-text); }
+
+  .hint { font-size: 11px; color: var(--text3); font-family: 'Courier New', monospace; margin-top: 4px; }
+
+  /* Results */
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .metric {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    border: 1px solid var(--border);
+  }
+  .metric.full { grid-column: 1 / -1; }
+  .metric.highlight {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .metric.highlight .metric-label,
+  .metric.highlight .metric-sub { color: rgba(255,255,255,0.7); }
+  .metric.highlight .metric-value { color: white; font-size: 26px; }
+
+  .metric-label { font-size: 10px; color: var(--text3); font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+  .metric-value { font-size: 20px; color: var(--text); font-family: 'Georgia', serif; }
+  .metric-sub { font-size: 10px; color: var(--text3); font-family: 'Courier New', monospace; margin-top: 2px; }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row .label { color: var(--text2); font-family: 'Courier New', monospace; font-size: 12px; }
+  .breakdown-row .value { color: var(--text); font-family: 'Georgia', serif; }
+  .breakdown-section {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    font-family: 'Courier New', monospace;
+    padding: 10px 0 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .breakdown-row.total-row {
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-top: 8px;
+    border-bottom: none;
+  }
+  .breakdown-row.total-row .label,
+  .breakdown-row.total-row .value { color: white; font-size: 14px; }
+  .breakdown-row.subtotal-row .label,
+  .breakdown-row.subtotal-row .value { color: var(--text); font-weight: bold; }
+
+  /* Save button */
+  .override-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .override-row .label { font-size: 12px; color: var(--text2); font-family: 'Courier New', monospace; flex: 1; }
+  .ov-input-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; min-width: 110px; }
+  .ov-calc { font-size: 11px; color: var(--text3); font-family: 'Courier New', monospace; }
+  .ov-input-wrap input { width: 110px; padding: 6px 8px; font-size: 13px; border: 1px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-family: 'Georgia', serif; }
+  .ov-input-wrap input:focus { outline: none; border-color: var(--amber); }
+  .ov-input-wrap input:not(:placeholder-shown) { border-color: var(--amber); background: var(--amber-light); }
+
+  .edit-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--accent-light);
+    color: var(--accent-text);
+    border: 1px solid #B7D9C4;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.15s;
+  }
+  .edit-btn:active { background: #B7D9C4; }
+
+  .save-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: opacity 0.15s;
+    box-shadow: var(--shadow);
+  }
+  .save-btn:active { opacity: 0.8; }
+
+  /* Saved records */
+  .saved-record {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .saved-record:active { border-color: var(--accent); }
+  .saved-record .rec-name { font-size: 16px; color: var(--text); margin-bottom: 4px; }
+  .saved-record .rec-meta { font-size: 11px; color: var(--text3); font-family: 'Courier New', monospace; margin-bottom: 8px; }
+  .saved-record .rec-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .rec-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-light);
+    color: var(--accent-text);
+    font-family: 'Courier New', monospace;
+  }
+  .rec-tag.amber { background: var(--amber-light); color: var(--amber); }
+  .saved-record .rec-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .rec-price .cost { font-size: 13px; color: var(--text2); font-family: 'Courier New', monospace; }
+  .rec-price .price { font-size: 20px; color: var(--accent); font-family: 'Georgia', serif; }
+
+  .delete-btn {
+    float: right;
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 0 0 8px;
+    line-height: 1;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--text3);
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--accent);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    transition: transform 0.3s ease;
+    z-index: 999;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .tag-note {
+    font-size: 10px;
+    background: var(--accent-light);
+    color: var(--accent-text);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-family: 'Courier New', monospace;
+    margin-left: 6px;
+  }
+
+  .section-gap { margin-bottom: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Bag Price Calculator</h1>
+  <p>Woven PP · Laminated · BOPP · Liner</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('calc')">Calculator</button>
+  <button class="tab" onclick="showTab('reverse')">Reverse</button>
+  <button class="tab" onclick="showTab('saved')">Saved <span id="saved-count"></span></button>
+</div>
+
+<!-- CALCULATOR TAB -->
+<div class="tab-content active" id="tab-calc">
+
+  <div class="card">
+    <div class="card-title">Order / Customer name</div>
+    <div class="field">
+      <input type="text" id="orderName" placeholder="e.g. Raj Traders — 500 bags" autocomplete="off">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Bag size (inches)</div>
+    <div class="input-row">
+      <div class="field">
+        <label>Width</label>
+        <input type="number" id="width" placeholder="e.g. 24" min="1" inputmode="decimal" oninput="calc()">
+      </div>
+      <div class="field">
+        <label>Length <span class="tag-note">+1 auto</span></label>
+        <input type="number" id="length" placeholder="e.g. 36" min="1" inputmode="decimal" oninput="calc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">GMS — fabric weight</div>
+    <div class="chip-row" style="margin-bottom:10px;">
+      <button class="chip" onclick="selectGms(this, 1.6)">1.6</button>
+      <button class="chip" onclick="selectGms(this, 1.7)">1.7</button>
+      <button class="chip" onclick="selectGms(this, 1.9)">1.9</button>
+      <button class="chip" onclick="selectGms(this, 2.0)">2.0</button>
+      <button class="chip" onclick="selectGms(this, 2.25)">2.25</button>
+      <button class="chip active" onclick="selectGms(this, 2.5)">2.5</button>
+      <button class="chip" onclick="selectGms(this, 3.0)">3.0</button>
+      <button class="chip" onclick="selectGms(this, 3.5)">3.5</button>
+      <button class="chip" onclick="selectGms(this, 4.0)">4.0</button>
+      <button class="chip" onclick="selectGms(this, 4.5)">4.5</button>
+      <button class="chip" id="chip-custom" onclick="selectCustomGms(this)">Custom</button>
+    </div>
+    <div id="custom-gms-wrap" style="display:none;">
+      <label>Custom GMS value</label>
+      <input type="number" id="customGms" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 2.75" oninput="onCustomGmsInput()">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Bag weight override</div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-wt-auto" onclick="selectWeightMode(false)">Auto</button>
+        <button class="toggle-btn" id="btn-wt-manual" onclick="selectWeightMode(true)">Override</button>
+      </div>
+      <span style="font-size:12px; color:var(--text3); font-family:'Courier New',monospace;" id="auto-weight-label">Calculated: — gms</span>
+    </div>
+    <div id="weight-override-wrap" style="display:none;">
+      <label>Manual bag weight (gms)</label>
+      <input type="number" id="manualWeight" min="1" step="1" inputmode="decimal" placeholder="e.g. 73" oninput="calc()">
+      <p class="hint" style="margin-top:4px;" id="weight-diff-note"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Lamination</div>
+    <div class="toggle-group">
+      <button class="toggle-btn" id="btn-unlam" onclick="selectLam(false)">Non-lam</button>
+      <button class="toggle-btn active" id="btn-lam" onclick="selectLam(true)">Laminated</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Printing</div>
+    <div class="toggle-group three">
+      <button class="toggle-btn" id="btn-print-no" onclick="selectPrint(0)">No print</button>
+      <button class="toggle-btn active" id="btn-print-single" onclick="selectPrint(1)">Single side</button>
+      <button class="toggle-btn" id="btn-print-double" onclick="selectPrint(2)">Double side</button>
+    </div>
+    <div id="print-rate-section" class="sub-card" style="margin-top:10px;">
+      <div id="single-rate-wrap" class="field">
+        <label>Single side rate (₹/bag)</label>
+        <input type="number" id="printRateSingle" placeholder="e.g. 0.60" min="0" step="0.1" inputmode="decimal" oninput="calc()">
+      </div>
+      <div id="double-rate-wrap" class="field" style="display:none;">
+        <label>Double side rate (₹/bag)</label>
+        <input type="number" id="printRateDouble" placeholder="e.g. 1.20" min="0" step="0.1" inputmode="decimal" oninput="calc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">BOPP</div>
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-bopp-no" onclick="selectBopp(false)">No BOPP</button>
+      <button class="toggle-btn" id="btn-bopp-yes" onclick="selectBopp(true)">With BOPP</button>
+    </div>
+    <div class="sub-card hidden" id="bopp-section">
+      <div class="card-title">BOPP details</div>
+      <div class="input-row">
+        <div class="field">
+          <label>BOPP weight (gms)</label>
+          <input type="number" id="boppWeight" placeholder="e.g. 12" min="0" inputmode="decimal" oninput="calc()">
+        </div>
+        <div class="field">
+          <label>BOPP rate (₹/kg)</label>
+          <input type="number" id="boppRate" placeholder="e.g. 550" min="0" inputmode="decimal" oninput="calc()">
+        </div>
+      </div>
+      <p class="hint">Cost = (weight × rate) ÷ 1000</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Liner</div>
+    <div class="toggle-group">
+      <button class="toggle-btn active" id="btn-liner-no" onclick="selectLiner(false)">No liner</button>
+      <button class="toggle-btn" id="btn-liner-yes" onclick="selectLiner(true)">With liner</button>
+    </div>
+    <div class="sub-card hidden" id="liner-section">
+      <div class="card-title">Liner details</div>
+      <div class="input-row">
+        <div class="field">
+          <label>Liner weight (gms)</label>
+          <input type="number" id="linerWeight" placeholder="e.g. 30" min="0" inputmode="decimal" oninput="calc()">
+        </div>
+        <div class="field">
+          <label>Liner rate (₹/kg)</label>
+          <input type="number" id="linerRate" placeholder="e.g. 120" min="0" inputmode="decimal" oninput="calc()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Liner conversion (₹/liner) <span class="tag-note">per piece</span></label>
+        <input type="number" id="linerConv" placeholder="e.g. 2" min="0" step="0.1" inputmode="decimal" oninput="calc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cost inputs</div>
+    <div class="input-row">
+      <div class="field">
+        <label>Material rate (₹/kg)</label>
+        <input type="number" id="matRate" placeholder="e.g. 190" min="0" inputmode="decimal" oninput="calc()">
+      </div>
+      <div class="field">
+        <label>Conversion (₹/kg) <span class="tag-note">per kg</span></label>
+        <input type="number" id="convRate" placeholder="e.g. 15" min="0" inputmode="decimal" oninput="calc()">
+      </div>
+    </div>
+    <div class="field">
+      <label>Margin (%)</label>
+      <input type="number" id="margin" placeholder="e.g. 0" min="0" max="100" inputmode="decimal" oninput="calc()">
+    </div>
+    <div class="field" style="margin-top:4px;">
+      <label>GST <span class="tag-note">included in price</span></label>
+      <div class="toggle-group" style="margin-top:4px;">
+        <button class="toggle-btn active" id="btn-gst-none" onclick="selectGst(0)">No GST</button>
+        <button class="toggle-btn" id="btn-gst-12" onclick="selectGst(12)">12%</button>
+        <button class="toggle-btn" id="btn-gst-18" onclick="selectGst(18)">18%</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card">
+    <div class="card-title">Results</div>
+    <div class="result-grid">
+      <div class="metric">
+        <div class="metric-label">Effective GMS</div>
+        <div class="metric-value" id="r-gms">—</div>
+        <div class="metric-sub" id="r-gms-sub">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Bag weight</div>
+        <div class="metric-value" id="r-weight">—</div>
+        <div class="metric-sub">rounded up + 1g thread</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Bag cost</div>
+        <div class="metric-value" id="r-bagcost">—</div>
+        <div class="metric-sub">mat + conv + print</div>
+      </div>
+      <div class="metric" id="metric-bopp" style="display:none;">
+        <div class="metric-label">BOPP cost</div>
+        <div class="metric-value" id="r-bopp">—</div>
+        <div class="metric-sub" id="r-bopp-sub">—</div>
+      </div>
+      <div class="metric" id="metric-liner" style="display:none;">
+        <div class="metric-label">Liner cost</div>
+        <div class="metric-value" id="r-liner">—</div>
+        <div class="metric-sub">mat + conv per piece</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Total cost/bag</div>
+        <div class="metric-value" id="r-total">—</div>
+        <div class="metric-sub">before margin</div>
+      </div>
+      <div class="metric highlight full">
+        <div class="metric-label">Final price/bag</div>
+        <div class="metric-value" id="r-price">—</div>
+        <div class="metric-sub" id="r-margin-label">incl. margin</div>
+      </div>
+      <div class="metric full" id="metric-gst" style="display:none; background:var(--amber-light); border:1px solid #FCD34D;">
+        <div class="metric-label" style="color:var(--amber);">Price incl. GST</div>
+        <div class="metric-value" id="r-gst-price" style="color:var(--amber);">—</div>
+        <div class="metric-sub" id="r-gst-label" style="color:var(--amber);">—</div>
+      </div>
+    </div>
+
+    <!-- Override toggle -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin:14px 0 10px;">
+      <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); font-family:'Courier New',monospace;">Override calculated values</span>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-ov-off" onclick="setOverrideMode(false)">Off</button>
+        <button class="toggle-btn" id="btn-ov-on" onclick="setOverrideMode(true)">On</button>
+      </div>
+    </div>
+
+    <div id="override-section" style="display:none;">
+      <div style="background:var(--amber-light); border:1px solid #FCD34D; border-radius:var(--radius-sm); padding:8px 12px; margin-bottom:12px;">
+        <span style="font-size:11px; color:var(--amber); font-family:'Courier New',monospace;">✎ Leave blank to use calculated value. Filled fields override the calculation.</span>
+      </div>
+
+      <div class="breakdown-section">Bag</div>
+      <div class="override-row">
+        <span class="label">Material + conversion cost</span>
+        <div class="ov-input-wrap"><span class="ov-calc" id="ov-calc-mat">—</span><input type="number" id="ov-mat" min="0" step="0.01" inputmode="decimal" placeholder="Override ₹" oninput="calc()"></div>
+      </div>
+      <div class="override-row">
+        <span class="label">Printing cost</span>
+        <div class="ov-input-wrap"><span class="ov-calc" id="ov-calc-print">—</span><input type="number" id="ov-print" min="0" step="0.01" inputmode="decimal" placeholder="Override ₹" oninput="calc()"></div>
+      </div>
+      <div id="ov-bopp-row" style="display:none;">
+        <div class="breakdown-section">BOPP</div>
+        <div class="override-row">
+          <span class="label">BOPP cost</span>
+          <div class="ov-input-wrap"><span class="ov-calc" id="ov-calc-bopp">—</span><input type="number" id="ov-bopp" min="0" step="0.01" inputmode="decimal" placeholder="Override ₹" oninput="calc()"></div>
+        </div>
+      </div>
+      <div id="ov-liner-row" style="display:none;">
+        <div class="breakdown-section">Liner</div>
+        <div class="override-row">
+          <span class="label">Liner material cost</span>
+          <div class="ov-input-wrap"><span class="ov-calc" id="ov-calc-liner-mat">—</span><input type="number" id="ov-liner-mat" min="0" step="0.01" inputmode="decimal" placeholder="Override ₹" oninput="calc()"></div>
+        </div>
+        <div class="override-row">
+          <span class="label">Liner conversion cost</span>
+          <div class="ov-input-wrap"><span class="ov-calc" id="ov-calc-liner-conv">—</span><input type="number" id="ov-liner-conv" min="0" step="0.01" inputmode="decimal" placeholder="Override ₹" oninput="calc()"></div>
+        </div>
+      </div>
+      <div class="breakdown-section">Summary</div>
+      <div class="override-row">
+        <span class="label">Total cost/bag</span>
+        <div class="ov-input-wrap"><span class="ov-calc" id="ov-calc-total">—</span><input type="number" id="ov-total" min="0" step="0.01" inputmode="decimal" placeholder="Override ₹" oninput="calc()"></div>
+      </div>
+      <div class="override-row">
+        <span class="label">Final price/bag</span>
+        <div class="ov-input-wrap"><span class="ov-calc" id="ov-calc-price">—</span><input type="number" id="ov-price" min="0" step="0.01" inputmode="decimal" placeholder="Override ₹" oninput="calc()"></div>
+      </div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="breakdown-section" style="margin-top:10px;">Breakdown</div>
+    <div class="breakdown-row"><span class="label">Size used (W × L)</span><span class="value" id="b-size">—</span></div>
+    <div class="breakdown-row"><span class="label">Material + conversion</span><span class="value" id="b-mat">—</span></div>
+    <div class="breakdown-row"><span class="label">Printing</span><span class="value" id="b-print">—</span></div>
+    <div id="bopp-breakdown" style="display:none;">
+      <div class="breakdown-section">BOPP</div>
+      <div class="breakdown-row"><span class="label">BOPP cost</span><span class="value" id="b-bopp">—</span></div>
+    </div>
+    <div id="liner-breakdown" style="display:none;">
+      <div class="breakdown-section">Liner</div>
+      <div class="breakdown-row"><span class="label">Liner material</span><span class="value" id="b-liner-mat">—</span></div>
+      <div class="breakdown-row"><span class="label">Liner conversion</span><span class="value" id="b-liner-conv">—</span></div>
+    </div>
+    <div class="breakdown-section">Summary</div>
+    <div class="breakdown-row subtotal-row"><span class="label">Total cost/bag</span><span class="value" id="b-cost">—</span></div>
+    <div class="breakdown-row"><span class="label">Margin</span><span class="value" id="b-margin">—</span></div>
+    <div class="breakdown-row total-row"><span class="label">Final price/bag</span><span class="value" id="b-total">—</span></div>
+    <div class="breakdown-row" id="b-gst-row" style="display:none;"><span class="label" id="b-gst-label">GST (12%)</span><span class="value" id="b-gst-amt">—</span></div>
+    <div class="breakdown-row total-row" id="b-gst-total-row" style="display:none;"><span class="label">Price incl. GST</span><span class="value" id="b-gst-total">—</span></div>
+
+    <button class="save-btn" onclick="saveRecord()">+ Save this calculation</button>
+  </div>
+</div>
+
+<!-- REVERSE TAB -->
+<div class="tab-content" id="tab-reverse">
+
+  <div class="card">
+    <div class="card-title">Step 1 — Bag details</div>
+    <div class="input-row">
+      <div class="field">
+        <label>Width (inches)</label>
+        <input type="number" id="r-width" min="1" inputmode="decimal" placeholder="e.g. 24" oninput="reverseCalc()">
+      </div>
+      <div class="field">
+        <label>Length <span class="tag-note">+1 auto</span></label>
+        <input type="number" id="r-length" min="1" inputmode="decimal" placeholder="e.g. 36" oninput="reverseCalc()">
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="field">
+        <label>Target price/bag (₹)</label>
+        <input type="number" id="r-target-price" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 35.00" oninput="reverseCalc()">
+      </div>
+      <div class="field">
+        <label>Margin (%)</label>
+        <input type="number" id="r-margin" min="0" max="100" inputmode="decimal" oninput="reverseCalc()">
+      </div>
+    </div>
+    <div class="field">
+      <label>GST included in target price?</label>
+      <div class="toggle-group" style="margin-top:4px;">
+        <button class="toggle-btn active" id="rbtn-gst-none" onclick="selectRGst(0)">No GST</button>
+        <button class="toggle-btn" id="rbtn-gst-12" onclick="selectRGst(12)">12%</button>
+        <button class="toggle-btn" id="rbtn-gst-18" onclick="selectRGst(18)">18%</button>
+      </div>
+      <p class="hint" id="r-gst-hint" style="margin-top:4px; display:none;"></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Step 2 — Bag configuration</div>
+    <div style="margin-bottom:12px;">
+      <label style="margin-bottom:6px;">Laminated?</label>
+      <div class="toggle-group">
+        <button class="toggle-btn" id="rbtn-unlam" onclick="selectRLam(false)">Non-lam</button>
+        <button class="toggle-btn active" id="rbtn-lam" onclick="selectRLam(true)">Laminated</button>
+      </div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="margin-bottom:6px;">Printing?</label>
+      <div class="toggle-group three">
+        <button class="toggle-btn" id="rbtn-print-no" onclick="selectRPrint(0)">No print</button>
+        <button class="toggle-btn active" id="rbtn-print-single" onclick="selectRPrint(1)">Single side</button>
+        <button class="toggle-btn" id="rbtn-print-double" onclick="selectRPrint(2)">Double side</button>
+      </div>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="margin-bottom:6px;">BOPP?</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="rbtn-bopp-no" onclick="selectRBopp(false)">No BOPP</button>
+        <button class="toggle-btn" id="rbtn-bopp-yes" onclick="selectRBopp(true)">With BOPP</button>
+      </div>
+      <div class="sub-card hidden" id="r-bopp-section" style="margin-top:8px;">
+        <div class="input-row" style="margin-bottom:0;">
+          <div class="field"><label>BOPP weight (gms)</label><input type="number" id="r-bopp-weight" min="0" inputmode="decimal" oninput="reverseCalc()"></div>
+          <div class="field"><label>BOPP rate (₹/kg)</label><input type="number" id="r-bopp-rate" min="0" inputmode="decimal" oninput="reverseCalc()"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <label style="margin-bottom:6px;">Liner?</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="rbtn-liner-no" onclick="selectRLiner(false)">No liner</button>
+        <button class="toggle-btn" id="rbtn-liner-yes" onclick="selectRLiner(true)">With liner</button>
+      </div>
+      <div class="sub-card hidden" id="r-liner-section" style="margin-top:8px;">
+        <div class="input-row">
+          <div class="field"><label>Liner weight (gms)</label><input type="number" id="r-liner-weight" min="0" inputmode="decimal" oninput="reverseCalc()"></div>
+          <div class="field"><label>Liner rate (₹/kg)</label><input type="number" id="r-liner-rate" min="0" inputmode="decimal" oninput="reverseCalc()"></div>
+        </div>
+        <div class="field"><label>Liner conversion (₹/piece)</label><input type="number" id="r-liner-conv" min="0" step="0.1" inputmode="decimal" oninput="reverseCalc()"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Step 3 — Optional known values</div>
+    <p style="font-size:12px; color:var(--text2); font-family:'Courier New',monospace; margin-bottom:12px; line-height:1.6;">All optional. Providing these narrows the results further.</p>
+    <div class="input-row">
+      <div class="field">
+        <label>Conversion rate (₹/kg) <span class="tag-note">optional</span></label>
+        <input type="number" id="r-conv-rate" min="0" inputmode="decimal" placeholder="e.g. 15" oninput="reverseCalc()">
+      </div>
+      <div class="field">
+        <label>Printing rate (₹/bag) <span class="tag-note">optional</span></label>
+        <input type="number" id="r-print-rate" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 0.60" oninput="reverseCalc()">
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="field">
+        <label>Known bag weight (gms) <span class="tag-note">overrides calc</span></label>
+        <input type="number" id="r-known-weight" min="0" step="1" inputmode="decimal" placeholder="if you know exact weight" oninput="reverseCalc()">
+      </div>
+      <div class="field">
+        <label>Known GMS <span class="tag-note">overrides calc</span></label>
+        <input type="number" id="r-known-gms" min="0" step="0.01" inputmode="decimal" placeholder="if you know GMS" oninput="reverseCalc()">
+      </div>
+    </div>
+    <div style="background:var(--amber-light); border:1px solid #FCD34D; border-radius:var(--radius-sm); padding:8px 12px; margin-top:4px;">
+      <span style="font-size:11px; color:var(--amber); font-family:'Courier New',monospace;" id="r-solve-hint">Enter size + price to see results.</span>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="reverse-result-card" style="display:none;">
+
+    <!-- GMS options table — always shown when size+price entered -->
+    <div class="card" id="rev-gms-card">
+      <div class="card-title">Material rate needed across GMS options</div>
+      <p style="font-size:11px; color:var(--text2); font-family:'Courier New',monospace; margin-bottom:10px;">Target: <b id="rev-target-label">—</b> · sorted by bag weight</p>
+      <div id="rev-gms-table"></div>
+    </div>
+
+    <!-- Conversion result — shown when known weight or known GMS provided -->
+    <div class="card" id="rev-conv-card" style="display:none;">
+      <div class="card-title">Required combined rate (mat + conv)</div>
+      <div class="metric highlight full" style="margin-bottom:12px;">
+        <div class="metric-label">Combined rate needed (₹/kg)</div>
+        <div class="metric-value" id="rev-conv-val">—</div>
+        <div class="metric-sub" id="rev-conv-sub">—</div>
+      </div>
+      <div class="breakdown-row"><span class="label">Bag weight used</span><span class="value" id="rev-conv-weight">—</span></div>
+      <div class="breakdown-row"><span class="label">Other costs (print+BOPP+liner)</span><span class="value" id="rev-conv-other">—</span></div>
+      <div class="breakdown-row subtotal-row"><span class="label">Total cost/bag</span><span class="value" id="rev-conv-total">—</span></div>
+      <div class="breakdown-row total-row"><span class="label">Final price/bag</span><span class="value" id="rev-conv-price">—</span></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- SAVED TAB -->
+<div class="tab-content" id="tab-saved">
+  <div id="saved-list"></div>
+  <div class="empty-state hidden" id="empty-state">
+    <div class="icon">📋</div>
+    <p>No saved calculations yet.</p>
+    <p style="margin-top:6px;">Calculate a price and tap Save.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast">Saved!</div>
+
+<script>
+  let selectedGms = 2.5;
+  let isLam = true;
+  let printMode = 1;
+  let isBopp = false;
+  let isLiner = false;
+  let isManualWeight = false;
+  let isOverrideMode = false;
+  let gstPct = 0;
+  let savedRecords = JSON.parse(localStorage.getItem('bagCalcRecords') || '[]');
+
+  function showTab(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    const target = el || (typeof event !== 'undefined' && event ? event.target : null);
+    if (target) target.classList.add('active');
+    else { document.querySelectorAll('.tab').forEach(t => { if (t.textContent.toLowerCase().includes(tab)) t.classList.add('active'); }); }
+    if (tab === 'saved') renderSaved();
+  }
+
+  function selectGms(el, val) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('custom-gms-wrap').style.display = 'none';
+    selectedGms = val;
+    calc();
+  }
+
+  function selectCustomGms(el) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('custom-gms-wrap').style.display = '';
+    const v = parseFloat(document.getElementById('customGms').value);
+    if (v > 0) { selectedGms = v; calc(); }
+  }
+
+  function onCustomGmsInput() {
+    const v = parseFloat(document.getElementById('customGms').value);
+    if (v > 0) { selectedGms = v; calc(); }
+  }
+
+  function setOverrideMode(on) {
+    isOverrideMode = on;
+    document.getElementById('btn-ov-on').classList.toggle('active', on);
+    document.getElementById('btn-ov-off').classList.toggle('active', !on);
+    document.getElementById('override-section').style.display = on ? '' : 'none';
+    if (!on) {
+      ['ov-mat','ov-print','ov-bopp','ov-liner-mat','ov-liner-conv','ov-total','ov-price'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    }
+    calc();
+  }
+
+  function selectGst(pct) {
+    gstPct = pct;
+    ['none','12','18'].forEach(v => {
+      document.getElementById('btn-gst-' + v).classList.toggle('active', (pct === 0 && v === 'none') || String(pct) === v);
+    });
+    calc();
+  }
+
+  function selectWeightMode(manual) {
+    isManualWeight = manual;
+    document.getElementById('btn-wt-auto').classList.toggle('active', !manual);
+    document.getElementById('btn-wt-manual').classList.toggle('active', manual);
+    document.getElementById('weight-override-wrap').style.display = manual ? '' : 'none';
+    calc();
+  }
+
+  function selectLam(lam) {
+    isLam = lam;
+    document.getElementById('btn-lam').classList.toggle('active', lam);
+    document.getElementById('btn-unlam').classList.toggle('active', !lam);
+    calc();
+  }
+
+  function selectPrint(mode) {
+    printMode = mode;
+    ['no','single','double'].forEach((s,i) => {
+      document.getElementById('btn-print-' + (i===0?'no':i===1?'single':'double')).classList.toggle('active', mode === i);
+    });
+    const rs = document.getElementById('print-rate-section');
+    rs.style.display = mode === 0 ? 'none' : '';
+    document.getElementById('single-rate-wrap').style.display = mode === 1 ? '' : 'none';
+    document.getElementById('double-rate-wrap').style.display = mode === 2 ? '' : 'none';
+    calc();
+  }
+
+  function selectBopp(bopp) {
+    isBopp = bopp;
+    document.getElementById('btn-bopp-yes').classList.toggle('active', bopp);
+    document.getElementById('btn-bopp-no').classList.toggle('active', !bopp);
+    document.getElementById('bopp-section').classList.toggle('hidden', !bopp);
+    document.getElementById('metric-bopp').style.display = bopp ? '' : 'none';
+    document.getElementById('bopp-breakdown').style.display = bopp ? '' : 'none';
+    calc();
+  }
+
+  function selectLiner(liner) {
+    isLiner = liner;
+    document.getElementById('btn-liner-yes').classList.toggle('active', liner);
+    document.getElementById('btn-liner-no').classList.toggle('active', !liner);
+    document.getElementById('liner-section').classList.toggle('hidden', !liner);
+    document.getElementById('metric-liner').style.display = liner ? '' : 'none';
+    document.getElementById('liner-breakdown').style.display = liner ? '' : 'none';
+    calc();
+  }
+
+  function getValues() {
+    return {
+      W: parseFloat(document.getElementById('width').value) || 0,
+      L: parseFloat(document.getElementById('length').value) || 0,
+      matRate: parseFloat(document.getElementById('matRate').value) || 0,
+      convRate: parseFloat(document.getElementById('convRate').value) || 0,
+      marginPct: parseFloat(document.getElementById('margin').value) || 0,
+      printRateSingle: parseFloat(document.getElementById('printRateSingle').value) || 0,
+      printRateDouble: parseFloat(document.getElementById('printRateDouble').value) || 0,
+      boppWeight: parseFloat(document.getElementById('boppWeight').value) || 0,
+      boppRate: parseFloat(document.getElementById('boppRate').value) || 0,
+      linerWeight: parseFloat(document.getElementById('linerWeight').value) || 0,
+      linerRate: parseFloat(document.getElementById('linerRate').value) || 0,
+      linerConv: parseFloat(document.getElementById('linerConv').value) || 0,
+    };
+  }
+
+  function compute(v) {
+    const effL = v.L + 1;
+    const lamExtra = isLam ? 0.5 : 0;
+    const effGms = +(selectedGms + 0.1 + lamExtra).toFixed(2);
+    const rawWeight = v.W * effL * effGms * 2.54 / 100;
+    const fabricWeight = Math.ceil(rawWeight);
+    const autoWeight = fabricWeight + 1;
+    const manualWt = parseFloat(document.getElementById('manualWeight').value) || 0;
+    const totalWeight = (isManualWeight && manualWt > 0) ? manualWt : autoWeight;
+    const combinedRate = v.matRate + v.convRate;
+    const matCost = totalWeight * combinedRate / 1000;
+    let printCost = 0;
+    if (printMode === 1) printCost = v.printRateSingle;
+    else if (printMode === 2) printCost = v.printRateDouble;
+    const bagCost = matCost + printCost;
+    const boppTotal = isBopp ? (v.boppWeight * v.boppRate) / 1000 : 0;
+    const linerMatCost = isLiner ? (v.linerWeight * v.linerRate / 1000) : 0;
+    const linerConvCost = isLiner ? v.linerConv : 0;
+    const linerTotal = linerMatCost + linerConvCost;
+    const totalCost = bagCost + boppTotal + linerTotal;
+    const marginAmt = totalCost * v.marginPct / 100;
+    const finalPrice = totalCost + marginAmt;
+    return { effL, effGms, totalWeight, matCost, printCost, bagCost, boppTotal, linerMatCost, linerConvCost, linerTotal, totalCost, marginAmt, finalPrice, combinedRate };
+  }
+
+  function calc() {
+    const v = getValues();
+    const r = compute(v);
+    const gmsNote = isLam ? selectedGms + ' +0.1 +0.5 lam' : selectedGms + ' +0.1 no lam';
+    const printLabels = ['—', '₹' + v.printRateSingle.toFixed(2) + ' (single)', '₹' + v.printRateDouble.toFixed(2) + ' (double)'];
+
+    // Auto weight label
+    const autoW = Math.ceil(v.W * (v.L+1) * r.effGms * 2.54 / 100) + 1;
+    document.getElementById('auto-weight-label').textContent = 'Calculated: ' + autoW + ' gms';
+    if (isManualWeight) {
+      const mw = parseFloat(document.getElementById('manualWeight').value) || 0;
+      const diff = mw - autoW;
+      const note = document.getElementById('weight-diff-note');
+      if (mw > 0 && diff !== 0) {
+        note.textContent = (diff > 0 ? '+' : '') + diff + ' gms vs calculated (' + autoW + ' gms)';
+        note.style.color = diff > 0 ? 'var(--amber)' : 'var(--accent)';
+      } else { note.textContent = ''; }
+    }
+    document.getElementById('r-gms').textContent = r.effGms.toFixed(2);
+    document.getElementById('r-gms-sub').textContent = gmsNote;
+    document.getElementById('r-weight').textContent = r.totalWeight + ' gms' + (isManualWeight ? ' ✎' : '');
+    // Apply overrides if mode is on
+    const ov = (id) => { const el = document.getElementById(id); return (isOverrideMode && el && el.value !== '') ? parseFloat(el.value) : null; };
+    const effMatCost   = ov('ov-mat')        !== null ? ov('ov-mat')        : r.matCost;
+    const effPrintCost = ov('ov-print')      !== null ? ov('ov-print')      : r.printCost;
+    const effBoppCost  = ov('ov-bopp')       !== null ? ov('ov-bopp')       : r.boppTotal;
+    const effLinerMat  = ov('ov-liner-mat')  !== null ? ov('ov-liner-mat')  : r.linerMatCost;
+    const effLinerConv = ov('ov-liner-conv') !== null ? ov('ov-liner-conv') : r.linerConvCost;
+    const effBagCost   = effMatCost + effPrintCost;
+    const effLinerTotal= effLinerMat + effLinerConv;
+    const calcTotal    = effBagCost + effBoppCost + effLinerTotal;
+    const effTotal     = ov('ov-total') !== null ? ov('ov-total') : calcTotal;
+    const calcMargin   = effTotal * v.marginPct / 100;
+    const calcFinal    = effTotal + calcMargin;
+    const effFinal     = ov('ov-price') !== null ? ov('ov-price') : calcFinal;
+
+    const ovMark = (calc, eff) => Math.abs(calc - eff) > 0.001 ? ' ✎' : '';
+
+    document.getElementById('r-bagcost').textContent = '₹' + effBagCost.toFixed(2) + ovMark(r.bagCost, effBagCost);
+    document.getElementById('r-bopp').textContent = '₹' + effBoppCost.toFixed(2) + ovMark(r.boppTotal, effBoppCost);
+    document.getElementById('r-bopp-sub').textContent = '(' + v.boppWeight + '×' + v.boppRate + ')÷1000';
+    document.getElementById('r-liner').textContent = '₹' + effLinerTotal.toFixed(2) + ovMark(r.linerTotal, effLinerTotal);
+    document.getElementById('r-total').textContent = '₹' + effTotal.toFixed(2) + ovMark(calcTotal, effTotal);
+    document.getElementById('r-price').textContent = '₹' + effFinal.toFixed(2) + ovMark(calcFinal, effFinal);
+    document.getElementById('r-margin-label').textContent = v.marginPct > 0 ? v.marginPct + '% margin = ₹' + calcMargin.toFixed(2) : 'no margin applied';
+
+    // Update override section calc labels
+    if (isOverrideMode) {
+      document.getElementById('ov-calc-mat').textContent       = 'calc: ₹' + r.matCost.toFixed(2);
+      document.getElementById('ov-calc-print').textContent     = 'calc: ₹' + r.printCost.toFixed(2);
+      document.getElementById('ov-calc-bopp').textContent      = 'calc: ₹' + r.boppTotal.toFixed(2);
+      document.getElementById('ov-calc-liner-mat').textContent = 'calc: ₹' + r.linerMatCost.toFixed(2);
+      document.getElementById('ov-calc-liner-conv').textContent= 'calc: ₹' + r.linerConvCost.toFixed(2);
+      document.getElementById('ov-calc-total').textContent     = 'calc: ₹' + calcTotal.toFixed(2);
+      document.getElementById('ov-calc-price').textContent     = 'calc: ₹' + calcFinal.toFixed(2);
+      document.getElementById('ov-bopp-row').style.display  = isBopp ? '' : 'none';
+      document.getElementById('ov-liner-row').style.display = isLiner ? '' : 'none';
+    }
+
+    document.getElementById('b-size').textContent = v.W + ' × ' + r.effL + ' in';
+    document.getElementById('b-mat').textContent = '₹' + effMatCost.toFixed(2) + (ovMark(r.matCost, effMatCost) ? ' (overridden)' : ' (' + r.totalWeight + 'g × ₹' + r.combinedRate + ')');
+    document.getElementById('b-print').textContent = printLabels[printMode] + (ovMark(r.printCost, effPrintCost) ? ' → ₹' + effPrintCost.toFixed(2) + ' ✎' : '');
+    document.getElementById('b-bopp').textContent = '₹' + effBoppCost.toFixed(2) + (ovMark(r.boppTotal, effBoppCost) ? ' (overridden)' : '');
+    document.getElementById('b-liner-mat').textContent = '₹' + effLinerMat.toFixed(2) + (ovMark(r.linerMatCost, effLinerMat) ? ' (overridden)' : '');
+    document.getElementById('b-liner-conv').textContent = '₹' + effLinerConv.toFixed(2) + (ovMark(r.linerConvCost, effLinerConv) ? ' (overridden)' : ' (flat)');
+    document.getElementById('b-cost').textContent = '₹' + effTotal.toFixed(2) + (ovMark(calcTotal, effTotal) ? ' (overridden)' : '');
+    document.getElementById('b-margin').textContent = v.marginPct > 0 ? v.marginPct + '% = ₹' + calcMargin.toFixed(2) : '—';
+    document.getElementById('b-total').textContent = '₹' + effFinal.toFixed(2) + (ovMark(calcFinal, effFinal) ? ' (overridden)' : '');
+
+    // GST
+    const gstAmt = effFinal * gstPct / 100;
+    const gstTotal = effFinal + gstAmt;
+    const hasGst = gstPct > 0;
+    document.getElementById('metric-gst').style.display = hasGst ? '' : 'none';
+    document.getElementById('b-gst-row').style.display = hasGst ? '' : 'none';
+    document.getElementById('b-gst-total-row').style.display = hasGst ? '' : 'none';
+    if (hasGst) {
+      document.getElementById('r-gst-price').textContent = '₹' + gstTotal.toFixed(2);
+      document.getElementById('r-gst-label').textContent = 'base ₹' + effFinal.toFixed(2) + ' + ' + gstPct + '% GST = ₹' + gstAmt.toFixed(2);
+      document.getElementById('b-gst-label').textContent = 'GST (' + gstPct + '%)';
+      document.getElementById('b-gst-amt').textContent = '₹' + gstAmt.toFixed(2);
+      document.getElementById('b-gst-total').textContent = '₹' + gstTotal.toFixed(2);
+    }
+  }
+
+  function saveRecord() {
+    const v = getValues();
+    const r = compute(v);
+    const name = document.getElementById('orderName').value.trim() || 'Unnamed order';
+    const now = new Date();
+    const ts = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
+      + ' · ' + now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+
+    const tags = [];
+    tags.push(v.W + '×' + v.L);
+    tags.push(selectedGms + ' GMS');
+    if (isLam) tags.push('Lam');
+    if (!isLam) tags.push('Non-lam');
+    if (printMode === 1) tags.push('Single print');
+    if (printMode === 2) tags.push('Double print');
+    if (isBopp) tags.push('BOPP');
+    if (isLiner) tags.push('Liner');
+
+    const manualWtVal = parseFloat(document.getElementById('manualWeight').value) || 0;
+    const ov = (id) => { const el = document.getElementById(id); return (isOverrideMode && el && el.value !== '') ? parseFloat(el.value) : null; };
+    const effMatCost   = ov('ov-mat')        !== null ? ov('ov-mat')        : r.matCost;
+    const effPrintCost = ov('ov-print')      !== null ? ov('ov-print')      : r.printCost;
+    const effBoppCost  = ov('ov-bopp')       !== null ? ov('ov-bopp')       : r.boppTotal;
+    const effLinerMat  = ov('ov-liner-mat')  !== null ? ov('ov-liner-mat')  : r.linerMatCost;
+    const effLinerConv = ov('ov-liner-conv') !== null ? ov('ov-liner-conv') : r.linerConvCost;
+    const effBagCost   = effMatCost + effPrintCost;
+    const effLinerTotal = effLinerMat + effLinerConv;
+    const calcTotal    = effBagCost + effBoppCost + effLinerTotal;
+    const effTotal     = ov('ov-total') !== null ? ov('ov-total') : calcTotal;
+    const effFinal     = ov('ov-price') !== null ? ov('ov-price') : effTotal * (1 + v.marginPct / 100);
+    const record = { id: Date.now(), name, ts, tags, totalCost: effTotal, finalPrice: effFinal, marginPct: v.marginPct, v, state: { selectedGms, isLam, printMode, isBopp, isLiner, isManualWeight, manualWeight: isManualWeight ? manualWtVal : 0, gstPct, isOverrideMode, overrides: isOverrideMode ? { mat: document.getElementById('ov-mat').value, print: document.getElementById('ov-print').value, bopp: document.getElementById('ov-bopp').value, linerMat: document.getElementById('ov-liner-mat').value, linerConv: document.getElementById('ov-liner-conv').value, total: document.getElementById('ov-total').value, price: document.getElementById('ov-price').value } : {} } };
+    savedRecords.unshift(record);
+    localStorage.setItem('bagCalcRecords', JSON.stringify(savedRecords));
+    updateSavedCount();
+    showToast('Saved!');
+  }
+
+  function deleteRecord(id) {
+    savedRecords = savedRecords.filter(r => r.id !== id);
+    localStorage.setItem('bagCalcRecords', JSON.stringify(savedRecords));
+    updateSavedCount();
+    renderSaved();
+  }
+
+  function loadRecord(id) {
+    const rec = savedRecords.find(r => r.id === id);
+    if (!rec) return;
+    const v = rec.v;
+    const st = rec.state;
+
+    document.getElementById('orderName').value = rec.name;
+    document.getElementById('width').value = v.W;
+    document.getElementById('length').value = v.L;
+    document.getElementById('matRate').value = v.matRate;
+    document.getElementById('convRate').value = v.convRate;
+    document.getElementById('margin').value = v.marginPct;
+    document.getElementById('printRateSingle').value = v.printRateSingle;
+    document.getElementById('printRateDouble').value = v.printRateDouble;
+    document.getElementById('boppWeight').value = v.boppWeight;
+    document.getElementById('boppRate').value = v.boppRate;
+    document.getElementById('linerWeight').value = v.linerWeight;
+    document.getElementById('linerRate').value = v.linerRate;
+    document.getElementById('linerConv').value = v.linerConv;
+
+    // GMS chips
+    selectedGms = st.selectedGms;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    let matched = false;
+    document.querySelectorAll('.chip:not(#chip-custom)').forEach(c => {
+      if (parseFloat(c.textContent) === st.selectedGms) { c.classList.add('active'); matched = true; }
+    });
+    if (!matched) {
+      document.getElementById('chip-custom').classList.add('active');
+      document.getElementById('custom-gms-wrap').style.display = '';
+      document.getElementById('customGms').value = st.selectedGms;
+    } else {
+      document.getElementById('custom-gms-wrap').style.display = 'none';
+    }
+
+    selectLam(st.isLam);
+    selectPrint(st.printMode);
+    selectBopp(st.isBopp);
+    selectLiner(st.isLiner);
+
+    // GST
+    selectGst(st.gstPct || 0);
+
+    // Overrides
+    if (st.isOverrideMode && st.overrides) {
+      setOverrideMode(true);
+      const ov = st.overrides;
+      const setOv = (id, val) => { if (val) document.getElementById(id).value = val; };
+      setOv('ov-mat', ov.mat); setOv('ov-print', ov.print); setOv('ov-bopp', ov.bopp);
+      setOv('ov-liner-mat', ov.linerMat); setOv('ov-liner-conv', ov.linerConv);
+      setOv('ov-total', ov.total); setOv('ov-price', ov.price);
+    } else { setOverrideMode(false); }
+
+    // Weight override
+    if (st.isManualWeight && st.manualWeight > 0) {
+      document.getElementById('manualWeight').value = st.manualWeight;
+      selectWeightMode(true);
+    } else {
+      selectWeightMode(false);
+    }
+
+    calc();
+    showTab('calc');
+    window.scrollTo(0, 0);
+    showToast('Loaded for editing!');
+  }
+
+  function renderSaved() {
+    const list = document.getElementById('saved-list');
+    const empty = document.getElementById('empty-state');
+    list.innerHTML = '';
+    if (savedRecords.length === 0) {
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    savedRecords.forEach(rec => {
+      const div = document.createElement('div');
+      div.className = 'saved-record';
+      div.innerHTML = `
+        <button class="delete-btn" onclick="event.stopPropagation(); deleteRecord(${rec.id})">×</button>
+        <div class="rec-name">${rec.name}</div>
+        <div class="rec-meta">${rec.ts}</div>
+        <div class="rec-tags">${rec.tags.map((t,i) => `<span class="rec-tag ${i>1?'amber':''}">${t}</span>`).join('')}</div>
+        <div class="rec-price">
+          <span class="cost">Cost ₹${rec.totalCost.toFixed(2)}${rec.marginPct > 0 ? ' · ' + rec.marginPct + '% margin' : ''}</span>
+          <span class="price">₹${rec.finalPrice.toFixed(2)}</span>
+        </div>
+        <button class="edit-btn" onclick="loadRecord(${rec.id})">✎ Edit / Recalculate</button>`;
+      list.appendChild(div);
+    });
+  }
+
+  function updateSavedCount() {
+    const el = document.getElementById('saved-count');
+    el.textContent = savedRecords.length > 0 ? '(' + savedRecords.length + ')' : '';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // Reverse calculator state
+  let rIsLam = true;
+  let rGstPct = 0;
+  let rPrintMode = 1;
+  let rIsBopp = false;
+  let rIsLiner = false;
+  const STD_GMS = [1.6, 1.7, 1.9, 2.0, 2.25, 2.5, 3.0, 3.5, 4.0, 4.5];
+
+  function selectRGst(pct) {
+    rGstPct = pct;
+    ['none','12','18'].forEach(v => {
+      document.getElementById('rbtn-gst-' + v).classList.toggle('active', (pct === 0 && v === 'none') || String(pct) === v);
+    });
+    const hint = document.getElementById('r-gst-hint');
+    if (pct > 0) {
+      hint.style.display = '';
+      const tp = parseFloat(document.getElementById('r-target-price').value) || 0;
+      if (tp > 0) hint.textContent = 'Base price = ₹' + (tp / (1 + pct/100)).toFixed(2) + ' (GST stripped from ₹' + tp.toFixed(2) + ')';
+      else hint.textContent = 'Target price will be GST-stripped before reverse calculation.';
+    } else { hint.style.display = 'none'; }
+    reverseCalc();
+  }
+
+  function selectRLam(lam) {
+    rIsLam = lam;
+    document.getElementById('rbtn-lam').classList.toggle('active', lam);
+    document.getElementById('rbtn-unlam').classList.toggle('active', !lam);
+    reverseCalc();
+  }
+
+  function selectRPrint(mode) {
+    rPrintMode = mode;
+    document.getElementById('rbtn-print-no').classList.toggle('active', mode === 0);
+    document.getElementById('rbtn-print-single').classList.toggle('active', mode === 1);
+    document.getElementById('rbtn-print-double').classList.toggle('active', mode === 2);
+    reverseCalc();
+  }
+
+  function selectRBopp(bopp) {
+    rIsBopp = bopp;
+    document.getElementById('rbtn-bopp-yes').classList.toggle('active', bopp);
+    document.getElementById('rbtn-bopp-no').classList.toggle('active', !bopp);
+    document.getElementById('r-bopp-section').classList.toggle('hidden', !bopp);
+    reverseCalc();
+  }
+
+  function selectRLiner(liner) {
+    rIsLiner = liner;
+    document.getElementById('rbtn-liner-yes').classList.toggle('active', liner);
+    document.getElementById('rbtn-liner-no').classList.toggle('active', !liner);
+    document.getElementById('r-liner-section').classList.toggle('hidden', !liner);
+    reverseCalc();
+  }
+
+  function rBagPrice(gms, W, effL, lamExtra, combinedRate, printCost, boppCost, linerCost, marginPct) {
+    const effGms = gms + 0.1 + lamExtra;
+    const weight = Math.ceil(W * effL * effGms * 2.54 / 100) + 1;
+    const matCost = weight * combinedRate / 1000;
+    const total = matCost + printCost + boppCost + linerCost;
+    return { price: total * (1 + marginPct / 100), weight, matCost, total };
+  }
+
+  function reverseCalc() {
+    const W           = parseFloat(document.getElementById('r-width').value) || 0;
+    const L           = parseFloat(document.getElementById('r-length').value) || 0;
+    const tPrice      = parseFloat(document.getElementById('r-target-price').value) || 0;
+    const marginPct   = parseFloat(document.getElementById('r-margin').value) || 0;
+    const convRate    = parseFloat(document.getElementById('r-conv-rate').value) || 0;
+    const printRate   = parseFloat(document.getElementById('r-print-rate').value) || 0;
+    const knownGms    = parseFloat(document.getElementById('r-known-gms').value) || 0;
+    const knownWeight = parseFloat(document.getElementById('r-known-weight').value) || 0;
+    const boppW       = parseFloat(document.getElementById('r-bopp-weight').value) || 0;
+    const boppR       = parseFloat(document.getElementById('r-bopp-rate').value) || 0;
+    const linerW      = parseFloat(document.getElementById('r-liner-weight').value) || 0;
+    const linerR      = parseFloat(document.getElementById('r-liner-rate').value) || 0;
+    const linerC      = parseFloat(document.getElementById('r-liner-conv').value) || 0;
+
+    const hint    = document.getElementById('r-solve-hint');
+    const resCard = document.getElementById('reverse-result-card');
+
+    if (!W || !L || !tPrice) {
+      resCard.style.display = 'none';
+      hint.textContent = 'Enter bag size and target price to see results.';
+      return;
+    }
+
+    const effL      = L + 1;
+    const lamExtra  = rIsLam ? 0.5 : 0;
+    const printCost = rPrintMode > 0 ? printRate : 0;
+    const boppCost  = rIsBopp ? (boppW * boppR) / 1000 : 0;
+    const linerCost = rIsLiner ? (linerW * linerR / 1000 + linerC) : 0;
+    const otherCost = printCost + boppCost + linerCost;
+
+    // Strip GST
+    const basePriceAfterGst = rGstPct > 0 ? tPrice / (1 + rGstPct / 100) : tPrice;
+    const rGstHint = document.getElementById('r-gst-hint');
+    if (rGstPct > 0 && tPrice > 0) {
+      rGstHint.style.display = '';
+      rGstHint.textContent = 'GST stripped: ₹' + tPrice.toFixed(2) + ' → base ₹' + basePriceAfterGst.toFixed(2);
+    }
+
+    // Target cost before margin, budget available for fabric
+    const targetCost = basePriceAfterGst / (1 + marginPct / 100);
+    const bagBudget  = targetCost - otherCost;
+
+    resCard.style.display = '';
+    document.getElementById('rev-target-label').textContent = '₹' + tPrice.toFixed(2) + (marginPct > 0 ? ' (incl. ' + marginPct + '% margin)' : '');
+
+    // ── GMS TABLE ──
+    // For each standard GMS, compute bag weight then solve: combinedRate = bagBudget * 1000 / weight
+    // If user provided convRate, split into mat + conv; else show full combined rate needed
+    const gmsToShow = knownGms > 0 ? [knownGms] : STD_GMS;
+
+    const rows = gmsToShow.map(g => {
+      const effGms = g + 0.1 + lamExtra;
+      const weight = knownWeight > 0 ? knownWeight : (Math.ceil(W * effL * effGms * 2.54 / 100) + 1);
+      // combined rate needed = bagBudget * 1000 / weight
+      const combinedNeeded = bagBudget * 1000 / weight;
+      const matNeeded = combinedNeeded - convRate; // mat rate = combined - known conv
+      // Verify price with this combined rate
+      const matCost  = weight * combinedNeeded / 1000;
+      const total    = matCost + otherCost;
+      const price    = total * (1 + marginPct / 100);
+      return { g, effGms: effGms.toFixed(2), weight, combinedNeeded, matNeeded, matCost, total, price };
+    }).sort((a, b) => a.weight - b.weight);
+
+    let html = '';
+    rows.forEach((r, i) => {
+      const isHighlight = rows.length === 1 || i === 0;
+      const matFeasible = r.matNeeded > 0;
+      const bg    = isHighlight ? 'var(--accent)' : 'var(--surface2)';
+      const bord  = isHighlight ? 'var(--accent)' : 'var(--border)';
+      const col   = isHighlight ? 'white' : 'var(--text)';
+      const sub   = isHighlight ? 'rgba(255,255,255,0.7)' : 'var(--text3)';
+      const warn  = !matFeasible ? (isHighlight ? 'rgba(255,200,0,0.9)' : 'var(--amber)') : sub;
+
+      const matLine = convRate > 0
+        ? `mat rate needed: ₹${r.matNeeded.toFixed(2)}/kg (conv ₹${convRate} deducted)`
+        : `combined rate needed: ₹${r.combinedNeeded.toFixed(2)}/kg`;
+
+      html += `<div style="padding:10px; margin-bottom:6px; border-radius:var(--radius-sm); background:${bg}; border:1px solid ${bord};">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <span style="font-size:15px; font-weight:bold; color:${col}; font-family:'Georgia',serif;">${r.g} GMS</span>
+            <span style="font-size:10px; color:${sub}; font-family:'Courier New',monospace; margin-left:8px;">eff: ${r.effGms} · wt: ${r.weight} gms</span>
+            <div style="font-size:12px; color:${matFeasible ? col : warn}; font-family:'Courier New',monospace; margin-top:4px;">${matFeasible ? matLine : '⚠ not achievable at this price'}</div>
+            ${convRate > 0 ? `<div style="font-size:11px; color:${sub}; font-family:'Courier New',monospace;">combined: ₹${r.combinedNeeded.toFixed(2)}/kg</div>` : ''}
+          </div>
+          <div style="text-align:right; min-width:64px;">
+            <div style="font-size:16px; color:${col}; font-family:'Georgia',serif;">₹${r.price.toFixed(2)}</div>
+            <div style="font-size:10px; color:${sub}; font-family:'Courier New',monospace;">cost ₹${r.total.toFixed(2)}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    // If no knownWeight and no knownGms, add note about what weight includes
+    if (!knownWeight && !knownGms) {
+      html += `<div style="font-size:11px; color:var(--text3); font-family:'Courier New',monospace; margin-top:6px; padding:0 4px;">Weight = W×(L+1)×effGMS×2.54÷100, rounded up + 1g thread</div>`;
+    } else if (knownWeight) {
+      html += `<div style="background:var(--amber-light); border:1px solid #FCD34D; border-radius:var(--radius-sm); padding:6px 10px; margin-top:6px;"><span style="font-size:11px; color:var(--amber); font-family:'Courier New',monospace;">Using your bag weight: ${knownWeight} gms (overrides formula)</span></div>`;
+    }
+
+    document.getElementById('rev-gms-table').innerHTML = html;
+    hint.textContent = knownWeight ? 'Using provided bag weight across GMS.' : knownGms ? 'Showing result for GMS ' + knownGms + '.' : 'Showing required material rate for all standard GMS options.';
+
+    // ── SPECIFIC WEIGHT/GMS CARD ── shown only if known weight or known GMS provided
+    const showConv = knownWeight > 0 || knownGms > 0;
+    document.getElementById('rev-conv-card').style.display = showConv ? '' : 'none';
+    if (showConv) {
+      const refRow = rows[0];
+      document.getElementById('rev-conv-val').textContent = refRow.combinedNeeded >= 0 ? '₹' + refRow.combinedNeeded.toFixed(2) + '/kg' : 'Not achievable';
+      document.getElementById('rev-conv-sub').textContent = convRate > 0
+        ? 'mat rate = ₹' + refRow.matNeeded.toFixed(2) + ' + conv ₹' + convRate + ' = ₹' + refRow.combinedNeeded.toFixed(2) + '/kg'
+        : 'No conversion entered — this is the full combined rate needed';
+      document.getElementById('rev-conv-weight').textContent = refRow.weight + ' gms' + (knownWeight ? ' (entered)' : ' (from GMS ' + knownGms + ')');
+      document.getElementById('rev-conv-other').textContent = otherCost > 0 ? '₹' + otherCost.toFixed(2) : '—';
+      document.getElementById('rev-conv-total').textContent = '₹' + refRow.total.toFixed(2);
+      document.getElementById('rev-conv-price').textContent = '₹' + refRow.price.toFixed(2);
+    }
+  }
+
+  // Init
+  selectPrint(1);
+  calc();
+  updateSavedCount();
+</script>
+</body>
+</html>
